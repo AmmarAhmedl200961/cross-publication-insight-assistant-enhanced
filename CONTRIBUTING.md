@@ -12,7 +12,7 @@ We are committed to providing a welcoming and inclusive experience for all contr
 
 1. **Fork and Clone**
    ```bash
-   git clone https://github.com/yourusername/cross-publication-insight-assistant-enhanced.git
+   git clone https://github.com/AmmarAhmedl200961/ cross-publication-insight-assistant-enhanced.git
    cd cross-publication-insight-assistant-enhanced
    ```
 

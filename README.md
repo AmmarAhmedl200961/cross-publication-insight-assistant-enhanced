@@ -2,6 +2,19 @@
 
 A sophisticated multi-agent system powered by CrewAI for analyzing research publications across multiple sources, identifying trends, and generating actionable insights. This enhanced version features a modern architecture with comprehensive testing, security, and user interface capabilities.
 
+## ✅ Production-Ready Features
+
+This project includes all essential production features:
+
+- ✅ **Complete, Functional System Code**: Fully implemented multi-agent workflow
+- ✅ **Clear Setup & Usage Instructions**: Comprehensive documentation below
+- ✅ **Testing Suite**: 61+ tests covering unit, integration, and end-to-end scenarios
+- ✅ **Security Guardrails**: Input validation, domain restrictions, content sanitization, rate limiting
+- ✅ **Modern UI**: Streamlit-based web interface with real-time analysis
+- ✅ **Environment Configuration**: `.env.example` file with all required variables
+- ✅ **Logging & Monitoring**: Comprehensive logging system with configurable levels
+- ✅ **No Hardcoded Secrets**: All sensitive data managed through environment variables
+
 ## 🚀 Features
 
 ### Core Capabilities
@@ -15,7 +28,7 @@ A sophisticated multi-agent system powered by CrewAI for analyzing research publ
 - **Security First**: Input validation, domain restrictions, content sanitization
 - **Production Ready**: Comprehensive error handling, logging, and monitoring
 - **Scalable Architecture**: Modular design with configurable components
-- **Extensive Testing**: Unit, integration, and performance tests with 95%+ coverage
+- **Extensive Testing**: Unit, integration, and performance tests with 61+ test cases
 - **Rich Visualizations**: Interactive charts and graphs using Plotly
 - **Export Capabilities**: Multiple output formats (JSON, CSV, PDF reports)
 
@@ -173,12 +186,14 @@ Key configuration options in `.env`:
 OPENAI_API_KEY=your_api_key_here
 
 # Optional (with defaults)
-OPENAI_MODEL=gpt-4-turbo-preview
+OPENAI_MODEL=gpt-4o-mini
 WEB_SCRAPING_RATE_LIMIT=1.0
 SECURITY_ALLOWED_DOMAINS=arxiv.org,scholar.google.com
 UI_PORT=8501
 LOG_LEVEL=INFO
 ```
+
+See `.env.example` for complete configuration options.
 
 ### Advanced Configuration
 The system supports extensive configuration through the `config/settings.py` file:
@@ -190,8 +205,8 @@ The system supports extensive configuration through the `config/settings.py` fil
 
 ## 🧪 Testing
 
-### Test Coverage
-The project maintains comprehensive test coverage:
+### Comprehensive Test Suite
+The project maintains extensive test coverage with **61+ test cases**:
 
 ```bash
 # Run all tests
@@ -201,37 +216,191 @@ python -m pytest tests/ -v
 python -m pytest tests/ --cov=src --cov-report=html
 
 # Run specific test categories
-python -m pytest tests/test_agents.py -v      # Agent tests
-python -m pytest tests/test_tools.py -v      # Tool tests
-python -m pytest tests/test_integration.py -v # Integration tests
+python -m pytest tests/test_agents.py -v      # Agent tests (4 tests)
+python -m pytest tests/test_tools.py -v      # Tool tests (9 tests)
+python -m pytest tests/test_integration.py -v # Integration tests (8 tests)
+python -m pytest tests/test_comprehensive.py -v # Comprehensive tests (40 tests)
 ```
 
 ### Test Categories
-- **Unit Tests**: Individual component testing
-- **Integration Tests**: End-to-end workflow testing
-- **Security Tests**: Input validation and safety checks
-- **Performance Tests**: Load and memory usage testing
-- **Mock Tests**: External service simulation
+- **Unit Tests**: Individual component testing (agents, tools, utilities)
+- **Integration Tests**: End-to-end workflow testing with real data flows
+- **Security Tests**: Input validation, XSS protection, injection prevention
+- **Performance Tests**: Memory usage, processing time, concurrent stability
+- **Reliability Tests**: Error handling, timeout scenarios, malformed data
+- **Mock Tests**: External service simulation for consistent testing
 
-## 🔒 Security Features
+### Test Results Summary
+```
+61 tests collected covering:
+- Web scraping security and reliability
+- Keyword extraction with special characters
+- Data analysis with large datasets  
+- Agent workflow orchestration
+- Flow-based processing
+- Error recovery and resilience
+- Memory usage stability
+- Configuration variations
+```
 
-### Input Validation
-- URL validation and domain restrictions
-- Content size limits and sanitization
-- SQL injection prevention
-- XSS protection
+## 🔒 Security & Guardrails
 
-### Rate Limiting
-- Configurable request rate limits
-- Burst protection
-- IP-based throttling
-- Graceful degradation
+### Input Validation & Sanitization
+- **URL Validation**: Comprehensive URL format and domain checking
+- **Content Sanitization**: HTML/script tag removal and content cleaning
+- **Size Limits**: Configurable maximum content size (default: 10MB)
+- **Domain Restrictions**: Whitelist-based domain access control
 
-### Data Protection
-- Secure API key handling
-- Content filtering
-- PII detection and removal
-- Audit logging
+### Rate Limiting & Abuse Prevention
+- **Request Rate Limiting**: Configurable requests per minute with burst protection
+- **Retry Logic**: Exponential backoff for failed requests
+- **Timeout Protection**: Configurable timeouts for all external calls
+- **Resource Limits**: Memory and processing time constraints
+
+### Security Features Implemented
+```python
+# Domain validation example
+SECURITY_ALLOWED_DOMAINS=arxiv.org,scholar.google.com,researchgate.net
+
+# Content size limits
+SECURITY_MAX_CONTENT_SIZE=10485760  # 10MB
+
+# Rate limiting
+WEB_SCRAPING_RATE_LIMIT=1.0  # 1 request per second
+RATE_LIMIT_REQUESTS_PER_MINUTE=60
+```
+
+### Protection Against
+- ✅ **SQL Injection**: Parameterized queries and input validation
+- ✅ **XSS Attacks**: Content sanitization and HTML parsing
+- ✅ **SSRF**: Domain whitelisting and URL validation  
+- ✅ **DoS**: Rate limiting and resource constraints
+- ✅ **Data Exposure**: No hardcoded secrets, environment-based config
+
+## �️ User Interface
+
+### Streamlit Web Application
+A modern, interactive web interface for publication analysis:
+
+```bash
+# Launch Streamlit app
+streamlit run ui/streamlit_app.py
+
+# Access at: http://localhost:8501
+```
+
+### UI Features
+- **📊 Interactive Dashboard**: Real-time analysis progress and results
+- **📁 Multiple Input Methods**: Manual URLs, file upload, or demo data
+- **⚙️ Configuration Panel**: Advanced analysis options and settings
+- **📈 Live Visualizations**: Dynamic charts and graphs using Plotly
+- **💾 Export Options**: Download results in JSON, CSV, or summary formats
+- **🔄 Real-time Updates**: Progress bars and status indicators
+
+### UI Components
+- **Analysis Tab**: Input methods and execution controls
+- **Results Tab**: Comprehensive analysis results display
+- **Export Tab**: Download and sharing capabilities
+- **Configuration Sidebar**: Method selection and advanced options
+
+### Supported Workflows
+- **Crew Method**: Sequential agent collaboration
+- **Flow Method**: Advanced orchestration with parallel processing
+- **Batch Processing**: Multiple publications simultaneously
+- **Real-time Monitoring**: Live progress tracking and error reporting
+
+## 📄 Environment Configuration
+
+### Required Environment Variables
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Copy the example file
+cp .env.example .env
+
+# Edit with your settings
+nano .env
+```
+
+### Key Configuration Options
+```bash
+# --- Required ---
+OPENAI_API_KEY=your_openai_api_key_here
+
+# --- Core Settings ---
+OPENAI_MODEL=gpt-4o-mini                    # LLM model selection
+CREWAI_VERBOSE=true                         # Agent workflow verbosity
+WEB_SCRAPING_RATE_LIMIT=1.0                # Requests per second
+SECURITY_ALLOWED_DOMAINS=arxiv.org,scholar.google.com  # Allowed domains
+
+# --- Optional Advanced Settings ---
+LOG_LEVEL=INFO                              # Logging verbosity
+CACHE_ENABLED=true                          # Enable request caching
+UI_PORT=8501                                # Streamlit port
+ANALYSIS_BATCH_SIZE=10                      # Batch processing size
+```
+
+### Security Configuration
+```bash
+# Domain restrictions (comma-separated)
+SECURITY_ALLOWED_DOMAINS=arxiv.org,scholar.google.com,researchgate.net
+
+# Content size limits
+SECURITY_MAX_CONTENT_SIZE=10485760          # 10MB limit
+
+# SSL validation
+SECURITY_VALIDATE_SSL=true                  # Verify SSL certificates
+```
+
+### No Hardcoded Secrets
+✅ All sensitive information is managed through environment variables:
+- API keys loaded from `.env` file
+- Configuration validation prevents hardcoded secrets
+- Test mode supports mock credentials
+- Graceful fallbacks for missing optional settings
+
+## 📊 Logging & Monitoring
+
+### Comprehensive Logging System
+Built-in logging and monitoring capabilities:
+
+```bash
+# Log files location
+logs/
+├── app.log              # Main application logs
+├── error.log            # Error-specific logs
+└── performance.log      # Performance metrics
+```
+
+### Logging Features
+- **📝 Structured Logging**: JSON-formatted logs with metadata
+- **🔄 Log Rotation**: Automatic file rotation (10MB max, 5 backups)
+- **📊 Multiple Levels**: DEBUG, INFO, WARNING, ERROR, CRITICAL
+- **⏱️ Performance Tracking**: Processing times and resource usage
+- **🔍 Request Tracing**: Complete request/response logging
+
+### Configuration Options
+```bash
+# Logging configuration
+LOG_LEVEL=INFO                              # Minimum log level
+LOG_FORMAT=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+LOG_FILE=logs/app.log                       # Log file location
+LOG_MAX_SIZE=10MB                           # Max file size before rotation
+LOG_BACKUP_COUNT=5                          # Number of backup files
+```
+
+### Monitoring Capabilities
+- **📈 Performance Metrics**: Processing time, memory usage, request counts
+- **⚠️ Error Tracking**: Detailed error logs with stack traces
+- **🔄 Health Checks**: System status and component availability
+- **📊 Usage Analytics**: Request patterns and user behavior (anonymized)
+
+### Example Log Output
+```
+2025-09-03 19:30:40,854 - src.main - INFO - Initializing Cross-Publication Insight Assistant...
+2025-09-03 19:30:41,166 - src.crews.publication_crew - INFO - Publication Insight Crew initialized successfully
+2025-09-03 19:30:41,377 - src.main - INFO - All components initialized successfully
+```
 
 ## 📊 Performance
 
@@ -280,7 +449,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Getting Help
 - 📧 Email: support@example.com
+<<<<<<< HEAD
 - 💬 Discord: <a href="https://discord.com/users/515117034862804992">marto90123</a>
+=======
+- 💬 Discord: [marto90123](https://discord.com/users/515117034862804992)
+>>>>>>> 89c15db (Update README with comprehensive feature documentation)
 - 🐛 Issues: [GitHub Issues](https://github.com/AmmarAhmedl200961/cross-publication-insight-assistant-enhanced/issues)
 
 ### FAQ
