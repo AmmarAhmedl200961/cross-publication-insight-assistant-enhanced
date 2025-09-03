@@ -18,8 +18,8 @@ class TestSystemIntegration:
     @pytest.fixture
     def mock_successful_environment(self):
         """Setup mock environment for successful integration tests."""
-        with patch('requests.Session.get') as mock_get, \\
-             patch('langchain_openai.ChatOpenAI') as mock_llm, \\
+        with patch('requests.Session.get') as mock_get, \
+             patch('langchain_openai.ChatOpenAI') as mock_llm, \
              patch('config.settings.validate_configuration', return_value=True):
             
             # Mock successful HTTP response
@@ -345,8 +345,8 @@ class TestPerformanceIntegration:
         initial_memory = process.memory_info().rss
         
         # Mock environment
-        with patch('requests.Session.get') as mock_get, \\
-             patch('langchain_openai.ChatOpenAI'), \\
+        with patch('requests.Session.get') as mock_get, \
+             patch('langchain_openai.ChatOpenAI'), \
              patch('config.settings.validate_configuration', return_value=True):
             
             mock_response = Mock()

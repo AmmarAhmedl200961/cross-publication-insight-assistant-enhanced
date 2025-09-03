@@ -56,10 +56,6 @@ cachetools>=5.5.0
 
 # Database (optional for persistence)
 sqlalchemy>=2.0.36
-sqlite3
-
-# Email notifications (optional)
-smtplib
 
 # Additional utilities
 tqdm>=4.67.0

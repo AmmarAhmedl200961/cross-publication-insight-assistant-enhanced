@@ -348,7 +348,7 @@ class TestTrendAggregatorAgent:
             }
         ]
         
-        with patch.object(trend_aggregator.data_analyzer, '_run') as mock_run, \\
+        with patch.object(trend_aggregator.data_analyzer, '_run') as mock_run, \
              patch.object(trend_aggregator.data_analyzer, 'get_detailed_analysis') as mock_analysis:
             
             mock_run.return_value = "Analysis complete"
@@ -474,7 +474,7 @@ class TestPublicationInsightCrew:
     
     @pytest.fixture
     def crew(self):
-        with patch('crewai.Crew'), \\
+        with patch('crewai.Crew'), \
              patch('langchain_openai.ChatOpenAI'):
             return PublicationInsightCrew()
     
@@ -539,8 +539,8 @@ class TestCrossPublicationInsightAssistant:
     
     @pytest.fixture
     def assistant(self):
-        with patch('config.settings.validate_configuration', return_value=True), \\
-             patch('src.crews.publication_crew.PublicationInsightCrew'), \\
+        with patch('config.settings.validate_configuration', return_value=True), \
+             patch('src.crews.publication_crew.PublicationInsightCrew'), \
              patch('src.flows.publication_flow.create_publication_flow'):
             return CrossPublicationInsightAssistant()
     
@@ -610,8 +610,8 @@ class TestIntegration:
     @pytest.fixture
     def mock_environment(self):
         """Setup mock environment for integration tests."""
-        with patch('requests.Session.get') as mock_get, \\
-             patch('langchain_openai.ChatOpenAI') as mock_llm, \\
+        with patch('requests.Session.get') as mock_get, \
+             patch('langchain_openai.ChatOpenAI') as mock_llm, \
              patch('config.settings.validate_configuration', return_value=True):
             
             # Mock HTTP response

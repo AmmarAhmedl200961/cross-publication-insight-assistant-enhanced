@@ -17,7 +17,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 
-from crewai_tools import BaseTool
+from crewai.tools import BaseTool
+from pydantic import PrivateAttr
 from config.settings import settings
 
 
@@ -72,9 +73,12 @@ class DataAnalysisTool(BaseTool):
     name: str = "data_analyzer"
     description: str = "Analyzes publication data to identify trends, patterns, and insights"
     
+    _analysis_history = PrivateAttr(default_factory=list)
+    _last_analysis = PrivateAttr(default=None)
+
     def __init__(self):
         super().__init__()
-        self.analysis_history = []
+        self._analysis_history = []
     
     def _calculate_diversity_index(self, frequencies: Dict[str, int]) -> float:
         """Calculate Shannon diversity index for keyword distribution."""
@@ -393,17 +397,22 @@ class DataAnalysisTool(BaseTool):
             result += f"\\nTrend score: {trend_score:.2f}, Diversity: {diversity_index:.2f}"
             
             # Store analysis for detailed retrieval
-            self.last_analysis = analysis
+            self._last_analysis = analysis
             
+            # Store in history
+            try:
+                self._analysis_history.append(self._last_analysis)
+            except Exception:
+                pass
             return result
-            
+
         except Exception as e:
             logger.error(f"Data analysis failed: {e}")
             return f"Error: Data analysis failed - {str(e)}"
-    
+
     def get_detailed_analysis(self) -> Optional[TrendAnalysis]:
         """Get the last detailed analysis result."""
-        return getattr(self, 'last_analysis', None)
+        return self._last_analysis
     
     def create_report(self, 
                      publication_data: List[Dict[str, Any]], 

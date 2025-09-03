@@ -9,6 +9,11 @@ import sys
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import asyncio
+import os
+
+# Add the project root to the Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 from config.settings import settings, validate_configuration, setup_logging
 from src.crews.publication_crew import PublicationInsightCrew

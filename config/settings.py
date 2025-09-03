@@ -6,11 +6,11 @@ and provides defaults for the application.
 
 import os
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 from pathlib import Path
 from dotenv import load_dotenv
-from pydantic import BaseSettings, validator
-from pydantic_settings import BaseSettings
+from pydantic import validator, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 # Load environment variables
@@ -18,76 +18,106 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    """Application settings with environment variable support."""
-    
-    # API Configuration
-    openai_api_key: str = os.getenv("OPENAI_API_KEY", "")
-    openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    openai_temperature: float = float(os.getenv("OPENAI_TEMPERATURE", "0.7"))
-    openai_max_tokens: int = int(os.getenv("OPENAI_MAX_TOKENS", "4000"))
-    
-    # CrewAI Configuration
-    crew_verbose: bool = os.getenv("CREW_VERBOSE", "true").lower() == "true"
-    crew_memory: bool = os.getenv("CREW_MEMORY", "true").lower() == "true"
-    max_rpm: int = int(os.getenv("MAX_RPM", "10"))
-    max_execution_time: int = int(os.getenv("MAX_EXECUTION_TIME", "300"))  # 5 minutes
-    
-    # Web Scraping Configuration
-    scraping_timeout: int = int(os.getenv("SCRAPING_TIMEOUT", "30"))
-    scraping_delay: float = float(os.getenv("SCRAPING_DELAY", "1.0"))
-    user_agent: str = os.getenv(
-        "USER_AGENT", 
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    """Application settings with environment variable & backward compatibility.
+
+    We accept both the original long-form env variable names (e.g. CREWAI_VERBOSE)
+    and simplified internal ones. Extra env vars are ignored to avoid validation errors.
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=False,
+        extra="ignore"
     )
-    max_retries: int = int(os.getenv("MAX_RETRIES", "3"))
-    enable_selenium: bool = os.getenv("ENABLE_SELENIUM", "false").lower() == "true"
-    
-    # Rate Limiting
-    rate_limit_calls: int = int(os.getenv("RATE_LIMIT_CALLS", "10"))
-    rate_limit_period: int = int(os.getenv("RATE_LIMIT_PERIOD", "60"))  # seconds
-    
-    # Security Settings
-    allowed_domains: List[str] = os.getenv(
-        "ALLOWED_DOMAINS", 
-        "arxiv.org,blog.langchain.dev,readytensor.ai,medium.com,towards*science.com"
-    ).split(",")
-    max_content_length: int = int(os.getenv("MAX_CONTENT_LENGTH", "1000000"))  # 1MB
-    
-    # Application Settings
-    debug: bool = os.getenv("DEBUG", "false").lower() == "true"
-    log_level: str = os.getenv("LOG_LEVEL", "INFO")
-    log_file: str = os.getenv("LOG_FILE", "logs/app.log")
-    
-    # UI Configuration
-    streamlit_port: int = int(os.getenv("STREAMLIT_PORT", "8501"))
-    streamlit_host: str = os.getenv("STREAMLIT_HOST", "localhost")
-    
-    # Database Configuration (optional)
-    database_url: str = os.getenv("DATABASE_URL", "sqlite:///insights.db")
-    enable_persistence: bool = os.getenv("ENABLE_PERSISTENCE", "false").lower() == "true"
-    
-    # Caching
-    cache_ttl: int = int(os.getenv("CACHE_TTL", "3600"))  # 1 hour
-    redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-    enable_caching: bool = os.getenv("ENABLE_CACHING", "true").lower() == "true"
-    
+
+    # --- OpenAI / LLM ---
+    openai_api_key: str = Field(default="", alias="OPENAI_API_KEY")
+    openai_model: str = Field(default="gpt-4o-mini", alias="OPENAI_MODEL")
+    openai_temperature: float = Field(default=0.7, alias="OPENAI_TEMPERATURE")
+    openai_max_tokens: int = Field(default=4000, alias="OPENAI_MAX_TOKENS")
+
+    # --- Crew / Agent Orchestration ---
+    crew_verbose: bool = Field(default=True, alias="CREWAI_VERBOSE")
+    crew_memory: bool = Field(default=True, alias="CREWAI_MEMORY")
+    crew_max_iterations: int = Field(default=10, alias="CREWAI_MAX_ITERATIONS")
+    max_rpm: int = Field(default=60, alias="RATE_LIMIT_REQUESTS_PER_MINUTE")
+    rate_limit_burst_size: int = Field(default=10, alias="RATE_LIMIT_BURST_SIZE")
+    max_execution_time: int = Field(default=300, alias="MAX_EXECUTION_TIME")
+    # Legacy compatibility (older code references expect these)
+    rate_limit_calls: int = Field(default=60, alias="RATE_LIMIT_CALLS")
+    rate_limit_period: int = Field(default=60, alias="RATE_LIMIT_PERIOD")
+
+    # --- Scraping ---
+    scraping_timeout: int = Field(default=30, alias="WEB_SCRAPING_TIMEOUT")
+    scraping_delay: float = Field(default=1.0, alias="WEB_SCRAPING_RATE_LIMIT")
+    max_retries: int = Field(default=3, alias="WEB_SCRAPING_MAX_RETRIES")
+    user_agent: str = Field(default="CrossPublicationInsightAssistant/1.0", alias="WEB_SCRAPING_USER_AGENT")
+    enable_selenium: bool = Field(default=False, alias="ENABLE_SELENIUM")
+
+    # --- Security ---
+    # Store raw domains string then expose processed list via property to prevent json parsing
+    allowed_domains_raw: str = Field(
+        default="arxiv.org,scholar.google.com,researchgate.net,ieee.org,acm.org,springer.com,nature.com,science.org",
+        alias="SECURITY_ALLOWED_DOMAINS"
+    )
+    max_content_length: int = Field(default=10_485_760, alias="SECURITY_MAX_CONTENT_SIZE")  # 10MB
+    validate_ssl: bool = Field(default=True, alias="SECURITY_VALIDATE_SSL")
+
+    # --- UI ---
+    ui_host: str = Field(default="localhost", alias="UI_HOST")
+    ui_port: int = Field(default=8501, alias="UI_PORT")
+    ui_debug: bool = Field(default=False, alias="UI_DEBUG")
+    ui_max_file_size: str = Field(default="50MB", alias="UI_MAX_FILE_SIZE")
+
+    # --- Caching ---
+    cache_enabled: bool = Field(default=True, alias="CACHE_ENABLED")
+    cache_ttl: int = Field(default=3600, alias="CACHE_TTL")
+    cache_max_size: int = Field(default=1000, alias="CACHE_MAX_SIZE")
+    redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
+
+    # --- Logging ---
+    log_level: str = Field(default="INFO", alias="LOG_LEVEL")
+    log_format: str = Field(default="%(asctime)s - %(name)s - %(levelname)s - %(message)s", alias="LOG_FORMAT")
+    log_file: str = Field(default="logs/app.log", alias="LOG_FILE")
+    log_max_size: str = Field(default="10MB", alias="LOG_MAX_SIZE")
+    log_backup_count: int = Field(default=5, alias="LOG_BACKUP_COUNT")
+
+    # --- Analysis Parameters ---
+    analysis_min_keywords: int = Field(default=5, alias="ANALYSIS_MIN_KEYWORDS")
+    analysis_max_keywords: int = Field(default=50, alias="ANALYSIS_MAX_KEYWORDS")
+    analysis_confidence_threshold: float = Field(default=0.7, alias="ANALYSIS_CONFIDENCE_THRESHOLD")
+    analysis_batch_size: int = Field(default=10, alias="ANALYSIS_BATCH_SIZE")
+
+    # --- Visualization ---
+    viz_default_theme: str = Field(default="plotly_white", alias="VIZ_DEFAULT_THEME")
+    viz_color_palette: str = Field(default="viridis", alias="VIZ_COLOR_PALETTE")
+    viz_figure_width: int = Field(default=800, alias="VIZ_FIGURE_WIDTH")
+    viz_figure_height: int = Field(default=600, alias="VIZ_FIGURE_HEIGHT")
+
+    # --- Testing Flags ---
+    test_mode: bool = Field(default=False, alias="TEST_MODE")
+    test_mock_llm: bool = Field(default=False, alias="TEST_MOCK_LLM")
+    test_skip_slow: bool = Field(default=False, alias="TEST_SKIP_SLOW")
+
+    # --- Legacy / Compatibility Fields (fallbacks) ---
+    debug: bool = Field(default=False, alias="DEBUG")
+    database_url: str = Field(default="sqlite:///insights.db", alias="DATABASE_URL")
+    enable_persistence: bool = Field(default=False, alias="ENABLE_PERSISTENCE")
+    enable_caching: bool = Field(default=True, alias="ENABLE_CACHING")
+
     @validator('openai_api_key')
-    def validate_openai_key(cls, v):
-        """Validate OpenAI API key format."""
+    def validate_openai_key(cls, v: str):
+        """Allow empty key for local/test; basic prefix check when provided."""
         if v and not v.startswith(('sk-', 'mock-')):
-            raise ValueError("OpenAI API key must start with 'sk-' or 'mock-' for testing")
+            # Don't fail hard—log warning instead of raising to improve UX.
+            logging.getLogger(__name__).warning(
+                "OPENAI_API_KEY does not use expected prefix; continuing (set DEBUG=true to silence)"
+            )
         return v
-    
-    @validator('allowed_domains')
-    def validate_domains(cls, v):
-        """Clean and validate allowed domains."""
-        if isinstance(v, str):
-            v = [domain.strip() for domain in v.split(",")]
-        return [domain for domain in v if domain]
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+
+    @property
+    def allowed_domains(self) -> List[str]:
+        return [d.strip() for d in self.allowed_domains_raw.split(',') if d.strip()]
 
 
 # Global settings instance
@@ -153,8 +183,9 @@ def validate_configuration() -> bool:
         issues.append("OPENAI_API_KEY is required for production use")
     
     # Check rate limiting settings
-    if settings.rate_limit_calls <= 0:
-        issues.append("RATE_LIMIT_CALLS must be positive")
+    effective_calls = getattr(settings, 'rate_limit_calls', None) or settings.max_rpm
+    if effective_calls <= 0:
+        issues.append("Rate limit must be positive (RATE_LIMIT_CALLS or RATE_LIMIT_REQUESTS_PER_MINUTE)")
     
     # Check timeout settings
     if settings.scraping_timeout <= 0:

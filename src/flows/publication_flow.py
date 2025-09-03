@@ -9,7 +9,7 @@ import asyncio
 import json
 
 from crewai.flow.flow import Flow, listen, start
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..crews.publication_crew import PublicationInsightCrew
 from config.settings import settings
@@ -40,9 +40,13 @@ class AnalysisConfig(BaseModel):
 
 
 class FlowState(BaseModel):
-    """State tracking for the flow."""
-    publications: List[PublicationInput]
-    config: AnalysisConfig
+    """State tracking for the flow.
+
+    Default factories allow the Flow base class to instantiate an initial state
+    without validation errors before kickoff provides real data.
+    """
+    publications: List[PublicationInput] = Field(default_factory=list)
+    config: AnalysisConfig = Field(default_factory=AnalysisConfig)
     current_stage: str = "initialized"
     publication_results: List[Dict[str, Any]] = []
     trend_analysis: Optional[Dict[str, Any]] = None
@@ -415,23 +419,42 @@ class PublicationAnalysisFlow(Flow[FlowState]):
         
         elif format == "summary":
             # Create text summary
-            summary = f"""
-Publication Analysis Workflow Summary
-====================================
+            processing_time = (
+                f"{(state.completed_at - state.started_at).total_seconds():.2f}s"
+                if getattr(state, 'started_at', None) and getattr(state, 'completed_at', None)
+                else "N/A"
+            )
+            top_keywords = 'N/A'
+            if state.trend_analysis:
+                top_kw_list = (
+                    state.trend_analysis.get('statistical_analysis', {})
+                    .get('top_keywords', [])
+                )
+                if isinstance(top_kw_list, list) and top_kw_list:
+                    top_keywords = ", ".join(
+                        [kw.get('keyword', '') for kw in top_kw_list[:5] if isinstance(kw, dict)]
+                    ) or 'N/A'
+            immediate_actions = 0
+            if state.insights:
+                recs = state.insights.get('recommendations', {})
+                if isinstance(recs, dict):
+                    actions = recs.get('immediate_actions', [])
+                    if isinstance(actions, list):
+                        immediate_actions = len(actions)
 
-Status: {state.current_stage}
-Publications Analyzed: {len(state.publications)}
-Successful Analyses: {len([r for r in state.publication_results if r.get('success')])}
+            errors_section = "None" if not state.errors else "\n" + "\n".join(f"- {e}" for e in state.errors)
 
-Processing Time: {(state.completed_at - state.started_at).total_seconds():.2f}s if state.started_at and state.completed_at else 'N/A'}
-
-Errors: {len(state.errors)}
-{chr(10).join(f"- {error}" for error in state.errors) if state.errors else "None"}
-
-Top Keywords: {', '.join([kw['keyword'] for kw in state.trend_analysis.get('statistical_analysis', {}).get('top_keywords', [])[:5]]) if state.trend_analysis else 'N/A'}
-
-Key Insights: {len(state.insights.get('recommendations', {}).get('immediate_actions', [])) if state.insights else 0} immediate actions identified
-"""
+            summary = (
+                "Publication Analysis Workflow Summary\n"
+                "====================================\n\n"
+                f"Status: {state.current_stage}\n"
+                f"Publications Analyzed: {len(getattr(state, 'publications', []))}\n"
+                f"Successful Analyses: {len([r for r in getattr(state, 'publication_results', []) if r.get('success')])}\n\n"
+                f"Processing Time: {processing_time}\n\n"
+                f"Errors: {len(getattr(state, 'errors', []))}\n{errors_section}\n\n"
+                f"Top Keywords: {top_keywords}\n\n"
+                f"Key Insights: {immediate_actions} immediate actions identified"
+            )
             return summary.strip()
         
         else:
