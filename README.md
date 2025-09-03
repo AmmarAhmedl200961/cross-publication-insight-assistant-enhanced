@@ -77,7 +77,7 @@ src/
 ### Quick Start
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cross-publication-insight-assistant-enhanced.git
+git clone https://github.com/AmmarAhmedl200961/cross-publication-insight-assistant-enhanced.git
 cd cross-publication-insight-assistant-enhanced
 
 # Create virtual environment
@@ -280,8 +280,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Getting Help
 - 📧 Email: support@example.com
-- 💬 Discord: [Join our community](https://discord.gg/example)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/cross-publication-insight-assistant-enhanced/issues)
+- 💬 Discord: <a href="https://discord.com/users/515117034862804992">marto90123</a>
+- 🐛 Issues: [GitHub Issues](https://github.com/AmmarAhmedl200961/cross-publication-insight-assistant-enhanced/issues)
 
 ### FAQ
 
